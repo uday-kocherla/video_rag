@@ -3,8 +3,14 @@ name = "vrag"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    "huggingface_hub>=0.24",  # artifact store: snapshot_download / upload_folder
+    "huggingface_hub>=0.24",       # artifact store: snapshot_download / upload_folder
+    "PyYAML>=6.0",                 # configs/default.yaml
+    "yt-dlp>=2024.1.1",            # pass 0: download, metadata, chapters
+    "scenedetect>=0.6",            # pass 0: shot detection at native frame rate
+    "opencv-python-headless>=4.8",  # scenedetect's video backend
 ]
+
+# ffmpeg and ffprobe are required as system binaries (present on Kaggle and Colab).
 
 [build-system]
 requires = ["setuptools>=68"]

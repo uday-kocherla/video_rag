@@ -36,7 +36,8 @@ MIGRATIONS: list[str] = [
         fps        REAL,
         width      INTEGER,
         height     INTEGER,
-        chapters   TEXT
+        chapters   TEXT,
+        is_vfr     INTEGER
     );
 
     CREATE TABLE shots (

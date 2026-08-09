@@ -26,6 +26,7 @@ class Video:
     width: int | None = None
     height: int | None = None
     chapters: str | None = None  # JSON array from YouTube, or NULL; pass 2 reads it for L1
+    is_vfr: int | None = None  # 1 if declared and average frame rates disagree — see media.py
 
 
 @dataclass(frozen=True, slots=True)

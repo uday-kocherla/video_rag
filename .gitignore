@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+
+# The artifact tree is synced through Hugging Face, never through git.
+artifacts/
+
+# Credentials.
+cookies.txt
+
+CLAUDE.md

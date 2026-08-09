@@ -1,0 +1,38 @@
+# Every threshold, tolerance, model name and target duration lives here.
+# A float literal in a function body is a bug.
+
+# Artifact store. `local_dir` is the root of the mirrored tree described in
+# vrag/sync.py, and must be on real local disk — never a mounted filesystem.
+repo_id: "CHANGE-ME/video-rag"
+local_dir: "artifacts"
+
+# Netscape-format cookie jar for yt-dlp. YouTube blocks datacenter IPs with
+# "Sign in to confirm you're not a bot", which applies equally to this box, to
+# Kaggle and to Colab. Deliberately kept *outside* the p0 block: it is a
+# credential, not a processing parameter, so changing it must not invalidate
+# p0's config hash and re-ingest the whole corpus.
+cookies_file: null
+
+p0:
+  # Shot detection needs the *native frame rate*, not native resolution, so we
+  # cap height to keep downloads and decoding cheap.
+  max_height: 720
+
+  # The proxy is forced to constant frame rate, which is what makes
+  # `frame_index / proxy_fps` an exact timestamp for pass 3.
+  proxy_fps: 2
+  proxy_height: 360
+  proxy_crf: 28
+
+  # 16 kHz mono is Whisper's native input; anything higher is resampled anyway.
+  audio_sample_rate: 16000
+
+  # PySceneDetect ContentDetector. `scene_downscale: null` lets it pick a
+  # downscale factor from the frame size.
+  scene_threshold: 27.0
+  scene_min_len_frames: 15
+  scene_downscale: null
+
+  # Declared and average frame rates differing by more than this marks the video
+  # as variable-frame-rate, where `frame_index / fps` stops being a valid clock.
+  vfr_tolerance_fps: 0.01
