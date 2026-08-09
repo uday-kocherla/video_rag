@@ -22,6 +22,8 @@ from contextlib import contextmanager
 from dataclasses import dataclass, fields
 from typing import Any, Iterable, Iterator
 
+from vrag import vram
+
 log = logging.getLogger(__name__)
 
 # Append only. Index = PRAGMA user_version after it has been applied.
@@ -217,25 +219,6 @@ def stage_done(conn: sqlite3.Connection, video_id: str, pass_name: str, cfg_hash
     return row is not None
 
 
-def _vram_peak_mb() -> float | None:
-    try:
-        import torch  # noqa: PLC0415 — optional; absent on CPU-only test runs
-    except ImportError:
-        return None
-    if not torch.cuda.is_available():
-        return None
-    return torch.cuda.max_memory_allocated() / 2**20
-
-
-def _vram_reset() -> None:
-    try:
-        import torch  # noqa: PLC0415
-    except ImportError:
-        return
-    if torch.cuda.is_available():
-        torch.cuda.reset_peak_memory_stats()
-
-
 @dataclass
 class StageRun:
     """Handle yielded by stage_run; the pass sets rows_out as it writes."""
@@ -261,7 +244,7 @@ def stage_run(
     )
     run_id = cur.lastrowid
     conn.commit()  # survives the rollback below, so a crashed run stays visible
-    _vram_reset()
+    vram.reset_peak()
 
     handle = StageRun()
     try:
@@ -270,7 +253,7 @@ def stage_run(
         conn.rollback()
         conn.execute(
             "UPDATE stage_runs SET status='failed', ended_at=?, peak_vram_mb=?, error=? WHERE id=?",
-            (time.time(), _vram_peak_mb(), f"{type(exc).__name__}: {exc}"[:2000], run_id),
+            (time.time(), vram.peak_mb(), f"{type(exc).__name__}: {exc}"[:2000], run_id),
         )
         conn.commit()
         log.exception("pass %s failed on %s", pass_name, video_id)
@@ -279,7 +262,7 @@ def stage_run(
         conn.commit()
         conn.execute(
             "UPDATE stage_runs SET status='ok', ended_at=?, rows_out=?, peak_vram_mb=? WHERE id=?",
-            (time.time(), handle.rows_out, _vram_peak_mb(), run_id),
+            (time.time(), handle.rows_out, vram.peak_mb(), run_id),
         )
         conn.commit()
         log.info(

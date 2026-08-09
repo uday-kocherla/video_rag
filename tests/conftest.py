@@ -16,6 +16,15 @@ HAS_FFMPEG = shutil.which("ffmpeg") is not None and shutil.which("ffprobe") is n
 
 needs_ffmpeg = pytest.mark.skipif(not HAS_FFMPEG, reason="ffmpeg not installed")
 
+try:
+    import torch  # noqa: F401
+
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
+
+needs_torch = pytest.mark.skipif(not HAS_TORCH, reason="torch not installed")
+
 CLIP_SECONDS = 2  # per half, so every clip below is 4 seconds long
 CLIP_FPS = 10
 CLIP_SIZE = "320x240"

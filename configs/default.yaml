@@ -36,3 +36,29 @@ p0:
   # Declared and average frame rates differing by more than this marks the video
   # as variable-frame-rate, where `frame_index / fps` stops being a valid clock.
   vfr_tolerance_fps: 0.01
+
+p1:
+  # Split into asr/align/sentence so the two stages hash independently: tuning
+  # the aligner must not invalidate transcription and re-run hours of ASR.
+  asr:
+    model: "large-v3"
+    compute_type: "float16"   # T4 is compute capability 7.5 — fp16 or int8, never bf16
+    beam_size: 5
+    language: "en"            # null to autodetect per video
+    vad_filter: true
+    vad_min_silence_ms: 500
+    # Whisper fabricates fluent text over silence. These two gates drop it:
+    # no_speech_prob catches obvious silence, avg_logprob catches the rest.
+    no_speech_threshold: 0.6
+    min_avg_logprob: -1.0
+
+  align:
+    model: "MMS_FA"           # torchaudio pipeline name; wav2vec2-based CTC aligner
+    window_s: 20.0            # emissions are frames x vocab, so a whole video will not fit
+    pad_s: 0.5                # window bounds come from the timings we are correcting
+
+  sentence:
+    # Punctuation drives sentence breaks; these caps are the fallback for when
+    # Whisper emits long unpunctuated runs. Pass 2 snaps to these boundaries.
+    max_words: 60
+    max_seconds: 20.0
