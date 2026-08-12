@@ -11,7 +11,7 @@ local_dir: "artifacts"
 # Kaggle and to Colab. Deliberately kept *outside* the p0 block: it is a
 # credential, not a processing parameter, so changing it must not invalidate
 # p0's config hash and re-ingest the whole corpus.
-cookies_file: null
+cookies_file: "cookies.txt"
 
 p0:
   # Shot detection needs the *native frame rate*, not native resolution, so we
