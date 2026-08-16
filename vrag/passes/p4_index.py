@@ -138,7 +138,9 @@ def search_transcript(
     sql += " ORDER BY score LIMIT ?"
     params.append(k)
 
-    return [(int(row["unit_id"]), -row["score"]) for row in index_conn.execute(sql, params)]
+    # Positional, not by name: this must work on a plain sqlite3.connect() too,
+    # not only on a connection that happens to have row_factory set.
+    return [(int(unit_id), -score) for unit_id, score in index_conn.execute(sql, params)]
 
 
 def run_corpus(conn, config: dict[str, Any], local_dir: str | Path) -> int:

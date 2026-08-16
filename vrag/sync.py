@@ -37,8 +37,13 @@ BM25_RELPATH = "index/bm25.sqlite"
 # Raw video is regenerable from its URL and would dominate the repo size; captions
 # are regenerable only by paying for a GPU again. The sidecar -wal and -shm files
 # are meaningless outside the machine that wrote them (see `checkpoint`).
+#
+# `*.mp4` is deliberately absent. The proxy is `derived/{id}/proxy.mp4` and must
+# survive: pass 3 consumes it, and regenerating it means re-downloading from
+# YouTube through the bot check — the one step we want to run exactly once.
+# Raw downloads land in a TemporaryDirectory (see p0_ingest), never under
+# `local_dir`, so the extensions below are a backstop rather than the mechanism.
 NEVER_UPLOAD = [
-    "*.mp4",
     "*.mkv",
     "*.webm",
     "*.part",

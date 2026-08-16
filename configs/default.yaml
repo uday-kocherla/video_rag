@@ -3,7 +3,7 @@
 
 # Artifact store. `local_dir` is the root of the mirrored tree described in
 # vrag/sync.py, and must be on real local disk — never a mounted filesystem.
-repo_id: "CHANGE-ME/video-rag"
+repo_id: "UdayKocherla/video-rag"
 local_dir: "artifacts"
 
 # Netscape-format cookie jar for yt-dlp. YouTube blocks datacenter IPs with

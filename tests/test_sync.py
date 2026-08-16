@@ -6,6 +6,8 @@ a checkpointed database uploads, a dirty one refuses.
 
 from __future__ import annotations
 
+from fnmatch import fnmatch
+
 import pytest
 
 from vrag import db, sync
@@ -55,7 +57,30 @@ def test_push_checkpoints_when_given_a_connection(artifacts):
     assert sync.db_path(local_dir).with_name("corpus.sqlite-wal").stat().st_size == 0
     assert uploads[0]["commit_message"] == "after pass 0"
     assert "*-wal" in uploads[0]["ignore_patterns"]
-    assert "*.mp4" in uploads[0]["ignore_patterns"], "raw video must never leave local disk"
+
+
+def uploaded(relpath: str) -> bool:
+    """Whether a file at this path survives NEVER_UPLOAD."""
+    name = relpath.rsplit("/", 1)[-1]
+    return not any(
+        fnmatch(name, pattern) or fnmatch(relpath, pattern)
+        for pattern in sync.NEVER_UPLOAD
+    )
+
+
+def test_the_proxy_is_uploaded():
+    """Pass 3 consumes the proxy, and regenerating it means re-downloading."""
+    assert uploaded("derived/abc123/proxy.mp4")
+    assert uploaded("derived/abc123/audio.wav")
+    assert uploaded("db/corpus.sqlite")
+
+
+def test_raw_downloads_and_wal_sidecars_are_not_uploaded():
+    assert not uploaded("derived/abc123/abc123.webm")
+    assert not uploaded("derived/abc123/abc123.mkv")
+    assert not uploaded("derived/abc123/abc123.f137.mp4.part")
+    assert not uploaded("db/corpus.sqlite-wal")
+    assert not uploaded("db/corpus.sqlite-shm")
 
 
 def test_push_refuses_a_stale_database(artifacts):
