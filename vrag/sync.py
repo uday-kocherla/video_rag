@@ -32,6 +32,7 @@ REPO_TYPE = "dataset"
 DB_RELPATH = "db/corpus.sqlite"
 DERIVED_RELPATH = "derived"
 INDEX_RELPATH = "index/lance"
+BM25_RELPATH = "index/bm25.sqlite"
 
 # Raw video is regenerable from its URL and would dominate the repo size; captions
 # are regenerable only by paying for a GPU again. The sidecar -wal and -shm files
@@ -62,6 +63,17 @@ def derived_dir(local_dir: str | Path, video_id: str) -> Path:
 def index_dir(local_dir: str | Path) -> Path:
     """Local directory holding the LanceDB tables."""
     return Path(local_dir) / INDEX_RELPATH
+
+
+def bm25_path(local_dir: str | Path) -> Path:
+    """Local path of the BM25 index.
+
+    A separate file from the corpus database on purpose. The index is disposable
+    and must be rebuildable by re-running pass 4 alone; putting an FTS5 table
+    inside the source of truth would make "delete the index and rebuild" mean
+    "delete the corpus".
+    """
+    return Path(local_dir) / BM25_RELPATH
 
 
 def pull(

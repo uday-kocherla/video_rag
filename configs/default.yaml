@@ -62,3 +62,41 @@ p1:
     # Whisper emits long unpunctuated runs. Pass 2 snaps to these boundaries.
     max_words: 60
     max_seconds: 20.0
+
+p2:
+  # fixed | fixed_overlap | snapped. Only `fixed` exists today — it is the
+  # baseline the other two have to beat, and M5 is where they get built and
+  # swept. Selecting an unimplemented strategy fails loudly rather than
+  # silently falling back to this one.
+  strategy: "fixed"
+
+  l0:
+    # Target 12-20s per CLAUDE.md. QA context comes from L1 expansion, so a
+    # large L0 buys nothing and costs tIoU on short moments.
+    target_s: 16.0
+    min_s: 8.0
+    max_s: 30.0
+    # 1.0 = windows butt up against each other. Below 1.0 they overlap, which
+    # is what `fixed_overlap` will sweep at M5.
+    stride_ratio: 1.0
+
+  l1:
+    min_s: 120.0
+    max_s: 300.0
+
+  # Below this, a video has no usable transcript: no snap targets and nothing
+  # to embed. Units get windowed on shot boundaries and flagged, so retrieval
+  # knows the transcript index has nothing to say about them.
+  silent_words_per_s: 0.3
+
+p4:
+  # Which unit level gets indexed for retrieval. L0 clips are the retrieval
+  # grain; L1 exists for context expansion, not matching.
+  level: 0
+
+p5:
+  # Units pulled from each index before fusion and span merging.
+  top_k: 20
+  # Retrieved units this close together are the same moment, so they merge
+  # into one span rather than competing as separate results.
+  max_gap_s: 2.0

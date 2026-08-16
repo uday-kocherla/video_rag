@@ -6,6 +6,7 @@ dependencies = [
     "huggingface_hub>=0.24",       # artifact store: snapshot_download / upload_folder
     "PyYAML>=6.0",                 # configs/default.yaml
     "yt-dlp>=2024.1.1",            # pass 0: download, metadata, chapters
+    "yt-dlp-ejs>=0.8",             # pass 0: solver scripts for YouTube's `n` challenge
     "scenedetect>=0.6",            # pass 0: shot detection at native frame rate
     "opencv-python-headless>=4.8",  # scenedetect's video backend
     "faster-whisper>=1.0",         # pass 1 stage A: ASR (CTranslate2, fp16 on T4)
@@ -13,7 +14,11 @@ dependencies = [
     "torchaudio>=2.1",             # torchaudio.functional.forced_align
 ]
 
-# ffmpeg and ffprobe are required as system binaries (present on Kaggle and Colab).
+# System binaries required, not installable from here:
+#   ffmpeg / ffprobe  — present on Kaggle and Colab.
+#   deno >= 2.3       — YouTube's `n` challenge is JavaScript, and yt-dlp needs a
+#                       runtime to solve it. Node also works but must be >= 22.
+#                       Install: curl -fsSL https://deno.land/install.sh | sh
 
 [build-system]
 requires = ["setuptools>=68"]
